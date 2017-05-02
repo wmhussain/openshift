@@ -4,8 +4,8 @@ set -e
 
 SUDOUSER=$1
 PASSWORD="$2"
-PRIVATEKEYtmp=$3
-PRIVATEKEY="-----BEGIN RSA PRIVATE KEY-----
+PRIVATEKEY=$3
+PRIVATEKEYtmp="-----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAr40HpLCtmcFaAot7XB/BWJ21USHE4HBoF7zLI1eberRSA+0Q
 yLE0Fo3sDWVC2RD7pd17IIhUvZWaV7O2y5yIQyhdzYPd2yw1I4V1tfVhSSrTVL7P
 QCbGf+08svB88TbW+nlRE+PJxy9I4IDc14dihckZOWySlFY8FTUHigtoBepiYezH
@@ -48,20 +48,26 @@ DOMAIN=$( awk 'NR==2' /etc/resolv.conf | awk '{ print $2 }' )
 
 echo "Generating keys"
 
-sudo runuser -l $SUDOUSER -c "echo \"$PRIVATEKEY\" > ~/.ssh/id_rsa"
-sudo runuser -l $SUDOUSER -c "chmod 600 ~/.ssh/id_rsa*"
+runuser -l $SUDOUSER -c "echo \"$PRIVATEKEY\" > ~/.ssh/id_rsa"
+runuser -l $SUDOUSER -c "sed -e 's/\s\+/\n/g' id_rsa > id_rsa.new"
+runuser -l $SUDOUSER -c "tail -n +5 id_rsa.new | head -n -4 > id_rsa.new2"
+runuser -l $SUDOUSER -c "sed -i '1s/^/-----BEGIN RSA PRIVATE KEY-----\n/' id_rsa.new2"
+runuser -l $SUDOUSER -c "echo -----END RSA PRIVATE KEY----- >> id_rsa.new2 && mv id_rsa.new2 ~/.ssh/id_rsa"
+runuser -l $SUDOUSER -c "chmod 600 ~/.ssh/id_rsa*"
+
+runuser -l $SUDOUSER -c "chmod 600 ~/.ssh/id_rsa*"
 
 echo "Configuring SSH ControlPath to use shorter path name"
 
-sudo sed -i -e "s/^# control_path = %(directory)s\/%%h-%%r/control_path = %(directory)s\/%%h-%%r/" /etc/ansible/ansible.cfg
-sudo sed -i -e "s/^#host_key_checking = False/host_key_checking = False/" /etc/ansible/ansible.cfg
-sudo sed -i -e "s/^#pty=False/pty=False/" /etc/ansible/ansible.cfg
+sed -i -e "s/^# control_path = %(directory)s\/%%h-%%r/control_path = %(directory)s\/%%h-%%r/" /etc/ansible/ansible.cfg
+sed -i -e "s/^#host_key_checking = False/host_key_checking = False/" /etc/ansible/ansible.cfg
+sed -i -e "s/^#pty=False/pty=False/" /etc/ansible/ansible.cfg
 
 # Create Ansible Hosts File
 
 echo "Generating Ansible hosts file"
 
-sudo cat > /etc/ansible/hosts <<EOF
+cat > /etc/ansible/hosts <<EOF
 # Create an OSEv3 group that contains the masters and nodes groups
 [OSEv3:children]
 masters
@@ -96,16 +102,16 @@ $MASTER.$DOMAIN openshift_node_labels="{'region': 'master', 'zone': 'default'}"
 $NODE-[0:${NODELOOP}].$DOMAIN openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 EOF
 
-sudo runuser -l $SUDOUSER -c "git clone https://github.com/openshift/openshift-ansible /home/$SUDOUSER/openshift-ansible"
+runuser -l $SUDOUSER -c "git clone https://github.com/openshift/openshift-ansible /home/$SUDOUSER/openshift-ansible"
 
 echo "Executing Ansible playbook"
 
-sudo runuser -l $SUDOUSER -c "ansible-playbook openshift-ansible/playbooks/byo/config.yml"
+runuser -l $SUDOUSER -c "ansible-playbook openshift-ansible/playbooks/byo/config.yml"
 
 echo "Modifying sudoers"
 
-sudo sed -i -e "s/Defaults    requiretty/# Defaults    requiretty/" /etc/sudoers
-sudo sed -i -e '/Defaults    env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY"/aDefaults    env_keep += "PATH"' /etc/sudoers
+sed -i -e "s/Defaults    requiretty/# Defaults    requiretty/" /etc/sudoers
+sed -i -e '/Defaults    env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY"/aDefaults    env_keep += "PATH"' /etc/sudoers
 
 # Deploy Registry and Router
 
@@ -119,13 +125,13 @@ echo "Deploying Router"
 
 echo "Re-enabling requiretty"
 
-sudo sed -i -e "s/# Defaults    requiretty/Defaults    requiretty/" /etc/sudoers
+sed -i -e "s/# Defaults    requiretty/Defaults    requiretty/" /etc/sudoers
 
 # Create OpenShift User
 
 echo "Creating OpenShift User"
 
-sudo mkdir -p /etc/origin/master
-sudo htpasswd -cb /etc/origin/master/htpasswd ${SUDOUSER} ${PASSWORD}
+mkdir -p /etc/origin/master
+htpasswd -cb /etc/origin/master/htpasswd ${SUDOUSER} ${PASSWORD}
 
 echo "Script complete"
