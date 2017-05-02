@@ -93,12 +93,16 @@ openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 
 
 # host group for masters
 [masters]
-$MASTER.$DOMAIN
+$MASTERPUBLICIPHOSTNAME
+#$MASTER.$DOMAIN
 
 # host group for nodes
 [nodes]
-$MASTER.$DOMAIN openshift_node_labels="{'region': 'master', 'zone': 'default'}"
-$NODE-[0:${NODELOOP}].$DOMAIN openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+#$MASTER.$DOMAIN openshift_node_labels="{'region': 'master', 'zone': 'default'}"
+#$NODE-[0:${NODELOOP}].$DOMAIN openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+$MASTERPUBLICIPHOSTNAME openshift_node_labels="{'region': 'master', 'zone': 'default'}"
+$NODE-[0:${NODELOOP}].westus.cloudapp.azure.com openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+
 EOF
 
 runuser -l $SUDOUSER -c "git clone https://github.com/openshift/openshift-ansible /home/$SUDOUSER/openshift-ansible"
