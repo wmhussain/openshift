@@ -13,7 +13,7 @@ NODECOUNT=$8
 ROUTING=$9
 
 NODELOOP=$((NODECOUNT - 1))
-
+NODEIP=$((NODECOUNT + 3))
 DOMAIN=$( awk 'NR==2' /etc/resolv.conf | awk '{ print $2 }' )
 
 # Generate public / private keys for use by Ansible
@@ -73,7 +73,7 @@ $MASTERPUBLICIPHOSTNAME
 #$MASTER.$DOMAIN openshift_node_labels="{'region': 'master', 'zone': 'default'}"
 #$NODE-[0:${NODELOOP}].$DOMAIN openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 $MASTERPUBLICIPHOSTNAME openshift_node_labels="{'region': 'master', 'zone': 'default'}"
-$NODE-[0:${NODELOOP}].westus.cloudapp.azure.com openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+10.0.1.[4:${NODEIP}] openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 
 EOF
 
