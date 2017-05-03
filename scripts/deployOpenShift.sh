@@ -65,15 +65,15 @@ openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 
 
 # host group for masters
 [masters]
-$MASTERPUBLICIPHOSTNAME
-#$MASTER.$DOMAIN
+#$MASTERPUBLICIPHOSTNAME
+$MASTER.$DOMAIN
 
 # host group for nodes
 [nodes]
-#$MASTER.$DOMAIN openshift_node_labels="{'region': 'master', 'zone': 'default'}"
-#$NODE-[0:${NODELOOP}].$DOMAIN openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
-$MASTERPUBLICIPHOSTNAME openshift_node_labels="{'region': 'master', 'zone': 'default'}"
-10.0.1.[4:${NODEIP}] openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+$MASTER.$DOMAIN openshift_node_labels="{'region': 'master', 'zone': 'default'}"
+$NODE-[0:${NODELOOP}].$DOMAIN openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+#$MASTERPUBLICIPHOSTNAME openshift_node_labels="{'region': 'master', 'zone': 'default'}"
+#10.0.1.[4:${NODEIP}] openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 
 EOF
 
