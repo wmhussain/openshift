@@ -21,11 +21,11 @@ DOMAIN=$( awk 'NR==2' /etc/resolv.conf | awk '{ print $2 }' )
 echo "Generating keys"
 
 runuser -l $SUDOUSER -c "echo \"$PRIVATEKEY\" > ~/.ssh/id_rsa"
-runuser -l $SUDOUSER -c "cp ~/.ssh/id_rsa ."
-runuser -l $SUDOUSER -c "sed -e 's/\s\+/\n/g' id_rsa > id_rsa.new"
-runuser -l $SUDOUSER -c "tail -n +5 id_rsa.new | head -n -4 > id_rsa.new2"
-runuser -l $SUDOUSER -c "sed -i '1s/^/-----BEGIN RSA PRIVATE KEY-----\n/' id_rsa.new2"
-runuser -l $SUDOUSER -c "echo -----END RSA PRIVATE KEY----- >> id_rsa.new2 && mv id_rsa.new2 ~/.ssh/id_rsa"
+#runuser -l $SUDOUSER -c "cp ~/.ssh/id_rsa ."
+#runuser -l $SUDOUSER -c "sed -e 's/\s\+/\n/g' id_rsa > id_rsa.new"
+#runuser -l $SUDOUSER -c "tail -n +5 id_rsa.new | head -n -4 > id_rsa.new2"
+#runuser -l $SUDOUSER -c "sed -i '1s/^/-----BEGIN RSA PRIVATE KEY-----\n/' id_rsa.new2"
+#runuser -l $SUDOUSER -c "echo -----END RSA PRIVATE KEY----- >> id_rsa.new2 && mv id_rsa.new2 ~/.ssh/id_rsa"
 runuser -l $SUDOUSER -c "chmod 600 ~/.ssh/id_rsa*"
 
 echo "Configuring SSH ControlPath to use shorter path name"
